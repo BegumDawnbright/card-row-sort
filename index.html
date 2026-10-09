@@ -16,7 +16,7 @@
   --good:#7ee0a1; --bad:#ff6b7a;
   --font-display:"Baloo 2", "Arial Rounded MT Bold", system-ui, sans-serif;
   --font-body:"Nunito", system-ui, -apple-system, sans-serif;
-  --t-move:380ms;
+  --t-move:280ms;
 }
 @media (prefers-reduced-motion: reduce){ :root{ --t-move:120ms } }
 [hidden]{display:none !important}
@@ -281,7 +281,7 @@ const GAP = 10;
 const $ = id => document.getElementById(id);
 const board = $('board'), main = $('main');
 const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
-const T = reduced ? 120 : 380;
+const T = reduced ? 120 : 280;
 const wait = ms => new Promise(r => setTimeout(r, ms));
 const buzz = p => { try{ navigator.vibrate && navigator.vibrate(p) }catch(e){} };
 
@@ -498,7 +498,7 @@ async function tap(card){
   sfx.swap(); buzz(8);
   a.el.style.zIndex = card.el.style.zIndex = 5;
   layout();
-  await wait(T + 30);
+  await wait(T + 10);
   a.el.style.zIndex = card.el.style.zIndex = '';
   await resolve();
   hud();
@@ -523,13 +523,14 @@ async function resolve(){
 async function mergeTopRow(combo){
   const row = S.grid[0];
   row.forEach(cd => cd.el.classList.add('pop'));
-  await wait(reduced ? 60 : 200);
+  await wait(reduced ? 40 : 70);
   const cx = (board.clientWidth - cw) / 2;
   row.forEach((cd, i) => {
     cd.el.style.zIndex = 6;
+    cd.el.style.transition = 'transform 160ms cubic-bezier(.5,0,.9,.6)';
     cd.el.style.transform = `translate(${cx + (i - (row.length-1)/2) * 4}px, 0px)`;
   });
-  await wait(T);
+  await wait(reduced ? 60 : 160);
   const it = ITEMS[row[0].type];
   burst(board.clientWidth/2, ch/2, WORLDS[it.w].c, 20 + combo*10);
   sfx.riffle(6 + combo*4, 2000 + combo*300);
@@ -543,11 +544,11 @@ async function mergeTopRow(combo){
     bump('movesPill');
   }
   row.forEach(cd => cd.el.classList.add('gone'));
-  await wait(reduced ? 80 : 260);
+  await wait(reduced ? 60 : 120);
   row.forEach(cd => cd.el.remove());
   S.grid.shift();
   layout(); hud();
-  await wait(T + 40);
+  await wait(T + 10);
 }
 
 function burst(x, y, tint, n = 26){
