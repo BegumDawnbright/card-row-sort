@@ -118,6 +118,8 @@ main{flex:1; min-height:0; display:flex; align-items:flex-start; justify-content
 .deck i{position:absolute; left:calc(var(--k) * 4px); right:calc(var(--k) * 4px); top:calc(var(--k) * -6px); height:100%; border-radius:12px; border:3px solid #2a2140;
   box-shadow:inset 0 0 0 3px var(--cream), 0 4px 0 #0000004d; z-index:calc(3 - var(--k));
   background:radial-gradient(circle at 50% 55%, var(--brass) 0 4px, transparent 5px), repeating-linear-gradient(45deg, #ffffff12 0 6px, transparent 6px 12px), linear-gradient(160deg, #7a3fb0, #5b2a86)}
+.deck i span{position:absolute; inset:0; border-radius:8px}
+.deck i em{position:absolute; left:50%; top:4px; transform:translateX(-50%); font:800 9px/1 var(--font-body); font-style:normal; color:#fff; background:#00000066; padding:2px 5px; border-radius:999px; white-space:nowrap}
 .deck b{position:absolute; left:50%; bottom:-10px; transform:translateX(-50%); z-index:5; background:var(--brass); color:var(--ink); font:800 11px/1 var(--font-body); letter-spacing:.06em; padding:5px 10px; border-radius:999px; white-space:nowrap}
 .spark{position:absolute; width:10px; height:10px; border-radius:3px; pointer-events:none; animation:spark 700ms ease-out forwards; z-index:20}
 @keyframes spark{to{transform:translate(var(--dx),var(--dy)) rotate(260deg) scale(.3); opacity:0}}
@@ -200,8 +202,8 @@ const LEVELS = [
   {c:3,r:3,s:0,slack:6,d:0}, {c:3,r:3,s:0,slack:5,d:0}, {c:3,r:4,s:0,slack:5,d:0}, {c:4,r:4,s:0,slack:5,d:0},
   {c:4,r:4,s:1,slack:4,d:0}, {c:3,r:5,s:0,slack:4,d:0}, {c:4,r:5,s:0,slack:3,d:0}, {c:4,r:5,s:1,slack:3,d:0},
   {c:4,r:5,s:0,slack:4,d:0}, {c:4,r:6,s:2,slack:3,d:0}, {c:3,r:5,s:0,slack:5,d:0}, {c:4,r:6,s:2,slack:1,d:1},
-  {c:4,r:5,s:1,slack:4,d:0}, {c:5,r:5,s:1,slack:3,d:0}, {c:5,r:5,s:2,slack:1,d:1}, {c:4,r:7,s:2,slack:5,d:0,v:5},
-  {c:4,r:7,s:2,slack:4,d:0,v:5}, {c:4,r:8,s:3,slack:4,d:0,v:5}, {c:5,r:7,s:3,slack:1,d:2,v:5}, {c:5,r:8,s:3,slack:4,d:0,v:5},
+  {c:4,r:5,s:1,slack:4,d:0}, {c:5,r:5,s:1,slack:3,d:0}, {c:5,r:5,s:2,slack:1,d:1}, {c:3,r:6,s:0,slack:8,d:0,v:5},
+  {c:4,r:6,s:1,slack:8,d:0,v:5}, {c:4,r:7,s:1,slack:8,d:0,v:5}, {c:5,r:7,s:2,slack:5,d:2,v:5}, {c:4,r:8,s:2,slack:8,d:0,v:5},
 ];
 
 // --- Toon sprite'lar: kalın koyu kontur, düz parlak renk, beyaz parlama ---
@@ -399,7 +401,7 @@ function startLevel(i, attempt = 0){
   ];
   const tag = $('tag');
   tag.hidden = !L.d; tag.className = 'tag ' + (L.d === 2 ? 'super' : 'hard'); tag.textContent = L.d === 2 ? 'ÇOK ZOR' : 'ZOR';
-  $('sub').textContent = (i === 15 || i === 16) ? 'Yeni: Desteler! Her sütunun altında kendi destesi var. Sıra patlayınca her desteden bir kart yukarı çıkar.' : tips[i] || (L.d ? 'Zor seviye! Hamlelerini dikkatli harca.' : 'Zincir kur: art arda patlayan her sıra hamle geri verir.');
+  $('sub').textContent = (i === 15 || i === 16) ? 'Yeni: Desteler! Her destenin üstü, sıradaki kartın hangi dünyadan geleceğini gösterir. Sıra patlayınca her desteden bir kart yukarı çıkar.' : tips[i] || (L.d ? 'Zor seviye! Hamlelerini dikkatli harca.' : 'Zincir kur: art arda patlayan her sıra hamle geri verir.');
 }
 
 function tray(kind, label){
@@ -468,7 +470,11 @@ function layout(animate = true){
   const left = Math.max(0, S.grid.length - S.vis);
   S.deck.hidden = !left;
   S.deck.innerHTML = Array.from({length: S.cols}, (_, c) => `<div class="pile" style="left:${c*(cw+GAP)}px; width:${cw}px">`
-    + Array.from({length: Math.min(left, 3)}, (_, k) => `<i style="--k:${k}"></i>`).join('') + `<b>+${left}</b></div>`).join('');
+    + Array.from({length: Math.min(left, 3)}, (_, k) => {
+        if (k) return `<i style="--k:${k}"></i>`;
+        const w = WORLDS[ITEMS[S.grid[S.vis][c].type].w];          // destenin üstü: sıradaki kartın dünyası
+        return `<i style="--k:0"><span class="w-${w.k}"></span><em>${w.name}</em></i>`;
+      }).join('') + `<b>+${left}</b></div>`).join('');
   if (!animate){ board.offsetHeight; board.classList.remove('noanim') }
 }
 
