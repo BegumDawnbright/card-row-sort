@@ -114,10 +114,11 @@ main{flex:1; min-height:0; display:flex; align-items:flex-start; justify-content
 
 .card.indeck{opacity:0; pointer-events:none}
 .deck{position:absolute; left:0; right:0; pointer-events:none}
-.deck i{position:absolute; left:calc(var(--k) * 6px); right:calc(var(--k) * 6px); top:calc(var(--k) * -6px); height:100%; border-radius:12px; border:3px solid #2a2140;
+.pile{position:absolute; top:0; height:100%}
+.deck i{position:absolute; left:calc(var(--k) * 4px); right:calc(var(--k) * 4px); top:calc(var(--k) * -6px); height:100%; border-radius:12px; border:3px solid #2a2140;
   box-shadow:inset 0 0 0 3px var(--cream), 0 4px 0 #0000004d; z-index:calc(3 - var(--k));
-  background:radial-gradient(circle at 50% 50%, var(--brass) 0 6px, transparent 7px), repeating-linear-gradient(45deg, #ffffff12 0 6px, transparent 6px 12px), linear-gradient(160deg, #7a3fb0, #5b2a86)}
-.deck b{position:absolute; left:50%; bottom:-14px; transform:translateX(-50%); z-index:5; background:var(--brass); color:var(--ink); font:800 11px/1 var(--font-body); letter-spacing:.06em; padding:5px 10px; border-radius:999px; white-space:nowrap}
+  background:radial-gradient(circle at 50% 55%, var(--brass) 0 4px, transparent 5px), repeating-linear-gradient(45deg, #ffffff12 0 6px, transparent 6px 12px), linear-gradient(160deg, #7a3fb0, #5b2a86)}
+.deck b{position:absolute; left:50%; bottom:-10px; transform:translateX(-50%); z-index:5; background:var(--brass); color:var(--ink); font:800 11px/1 var(--font-body); letter-spacing:.06em; padding:5px 10px; border-radius:999px; white-space:nowrap}
 .spark{position:absolute; width:10px; height:10px; border-radius:3px; pointer-events:none; animation:spark 700ms ease-out forwards; z-index:20}
 @keyframes spark{to{transform:translate(var(--dx),var(--dy)) rotate(260deg) scale(.3); opacity:0}}
 .float{position:absolute; pointer-events:none; font:800 28px var(--font-display); color:var(--brass); text-shadow:0 2px 0 #0006; animation:floatUp 1000ms ease-out forwards; white-space:nowrap; transform:translate(-50%,-50%); z-index:21}
@@ -398,7 +399,7 @@ function startLevel(i, attempt = 0){
   ];
   const tag = $('tag');
   tag.hidden = !L.d; tag.className = 'tag ' + (L.d === 2 ? 'super' : 'hard'); tag.textContent = L.d === 2 ? 'ÇOK ZOR' : 'ZOR';
-  $('sub').textContent = (i === 15 || i === 16) ? 'Yeni: Deste! Alttaki desteye dokunulamaz. Her patlayan sıradan sonra desteden yeni bir sıra gelir.' : tips[i] || (L.d ? 'Zor seviye! Hamlelerini dikkatli harca.' : 'Zincir kur: art arda patlayan her sıra hamle geri verir.');
+  $('sub').textContent = (i === 15 || i === 16) ? 'Yeni: Desteler! Her sütunun altında kendi destesi var. Sıra patlayınca her desteden bir kart yukarı çıkar.' : tips[i] || (L.d ? 'Zor seviye! Hamlelerini dikkatli harca.' : 'Zincir kur: art arda patlayan her sıra hamle geri verir.');
 }
 
 function tray(kind, label){
@@ -450,8 +451,8 @@ function layout(animate = true){
   if (!animate) board.classList.add('noanim');
   S.grid.forEach((row, r) => row.forEach((cd, c) => {
     const inDeck = r >= S.vis;
-    const [x, y] = inDeck ? [board.clientWidth/2 - cw/2, S.deckY] : pos(r, c);
-    cd.el.style.transform = `translate(${x}px, ${y}px)` + (inDeck ? ' scale(.6)' : '');
+    const [x, y] = inDeck ? [c*(cw+GAP), S.deckY] : pos(r, c);
+    cd.el.style.transform = `translate(${x}px, ${y}px)`;
     cd.el.classList.toggle('indeck', inDeck);
     if (r <= 1 && !cd.seen){
       cd.seen = true;
@@ -466,7 +467,8 @@ function layout(animate = true){
   S.trayN.hidden = S.grid.length < 2;
   const left = Math.max(0, S.grid.length - S.vis);
   S.deck.hidden = !left;
-  S.deck.innerHTML = Array.from({length: Math.min(left, 3)}, (_, k) => `<i style="--k:${k}"></i>`).join('') + `<b>DESTE +${left} sıra</b>`;
+  S.deck.innerHTML = Array.from({length: S.cols}, (_, c) => `<div class="pile" style="left:${c*(cw+GAP)}px; width:${cw}px">`
+    + Array.from({length: Math.min(left, 3)}, (_, k) => `<i style="--k:${k}"></i>`).join('') + `<b>+${left}</b></div>`).join('');
   if (!animate){ board.offsetHeight; board.classList.remove('noanim') }
 }
 
